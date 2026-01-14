@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Formularz klienta — wydruk</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- html2pdf (jsPDF + html2canvas w środku) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="brand">
+      <div class="logo">HD</div>
+      <div>
+        <div class="title">Formularz klienta</div>
+        <div class="subtitle">Dane + zestawienie zobowiązań (wersja do druku)</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnSavePdf" class="btn primary">Zapisz PDF</button>
+      <button id="btnPrint" class="btn">Drukuj</button>
+      <button id="btnClear" class="btn danger">Wyczyść</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- To właśnie zapisujemy/drukujemy -->
+    <section id="printArea" class="paper">
+      <div class="doc-header">
+        <div>
+          <h1>Formularz klienta</h1>
+          <p class="muted">Wypełnij czytelnie. Na końcu kliknij „Zapisz PDF” lub „Drukuj”.</p>
+        </div>
+        <div class="doc-meta">
+          <div><span class="muted">Data:</span> <span id="today"></span></div>
+          <div><span class="muted">Wersja:</span> 1.0</div>
+        </div>
+      </div>
+
+      <!-- A) DANE OSOBOWE -->
+      <section class="block">
+        <h2>Dane osobowe</h2>
+
+        <div class="grid">
+          <label class="field">
+            <span>Imię i nazwisko</span>
+            <input type="text" name="fullName" autocomplete="name" />
+          </label>
+
+          <label class="field">
+            <span>PESEL</span>
+            <input type="text" name="pesel" inputmode="numeric" maxlength="11" />
+          </label>
+
+          <label class="field">
+            <span>Telefon</span>
+            <input type="tel" name="phone" inputmode="tel" autocomplete="tel" />
+          </label>
+
+          <label class="field">
+            <span>E-mail</span>
+            <input type="email" name="email" autocomplete="email" />
+          </label>
+
+          <label class="field full">
+            <span>Adres zamieszkania</span>
+            <input type="text" name="address" autocomplete="street-address" />
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="chips">
+            <span class="muted">Stan cywilny:</span>
+            <label class="chip"><input type="radio" name="civil" value="panna/kawaler"> panna/kawaler</label>
+            <label class="chip"><input type="radio" name="civil" value="malzenstwo"> w związku małżeńskim</label>
+            <label class="chip"><input type="radio" name="civil" value="po_rozwodzie"> po rozwodzie</label>
+            <label class="chip"><input type="radio" name="civil" value="wdowa/wdowiec"> wdowa/wdowiec</label>
+          </div>
+
+          <div class="chips">
+            <span class="muted">Rozdzielność:</span>
+            <label class="chip"><input type="radio" name="separation" value="tak"> tak</label>
+            <label class="chip"><input type="radio" name="separation" value="nie"> nie</label>
+          </div>
+        </div>
+      </section>
+
+      <!-- B) ZOBOWIĄZANIA -->
+      <section class="block">
+        <div class="block-head">
+          <h2>Zestawienie zobowiązań finansowych</h2>
+          <button id="btnAddDebt" class="btn small no-print">+ Dodaj zobowiązanie</button>
+        </div>
+
+        <!-- Widok na telefonie (karty) -->
+        <div id="debtsCards" class="cards no-print"></div>
+
+        <!-- Widok do druku (tabela A4) -->
+        <table class="table print-only" aria-label="Zobowiązania">
+          <thead>
+            <tr>
+              <th>Rodzaj</th>
+              <th>Czyje</th>
+              <th>Bank</th>
+              <th>Kwota pocz.</th>
+              <th>Kwota akt.</th>
+              <th>Rata</th>
+              <th>Data umowy</th>
+              <th>Koniec</th>
+              <th>Spłacone (T/N)</th>
+            </tr>
+          </thead>
+          <tbody id="debtsTbody"></tbody>
+        </table>
+
+        <div class="hint muted">
+          Jeśli nie masz zobowiązań — zostaw puste.
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Podpis</h2>
+        <div class="signature">
+          <div class="line"></div>
+          <div class="muted">Czytelny podpis klienta</div>
+        </div>
+      </section>
+
+      <footer class="doc-footer">
+        <div class="muted">Wygenerowano z formularza online — wersja do druku A4</div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
