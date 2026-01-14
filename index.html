@@ -3,36 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Formularz klienta — wydruk</title>
+  <title>Formularz klienta — 2 strony</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- html2pdf (jsPDF + html2canvas w środku) -->
+  <!-- html2pdf (jsPDF + html2canvas) -->
   <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+  <!-- Pasek górny (niewidoczny w druku) -->
   <header class="topbar no-print">
     <div class="brand">
       <div class="logo">HD</div>
       <div>
         <div class="title">Formularz klienta</div>
-        <div class="subtitle">Dane + zestawienie zobowiązań (wersja do druku)</div>
+        <div class="subtitle">Krok <span id="stepNum">1</span>/2 • do druku A4</div>
       </div>
     </div>
 
     <div class="actions">
-      <button id="btnSavePdf" class="btn primary">Zapisz PDF</button>
-      <button id="btnPrint" class="btn">Drukuj</button>
+      <button id="btnBack" class="btn" disabled>Wstecz</button>
+      <button id="btnNext" class="btn primary">Dalej</button>
+      <button id="btnSavePdf" class="btn primary hidden">Zapisz PDF</button>
+      <button id="btnPrint" class="btn hidden">Drukuj</button>
       <button id="btnClear" class="btn danger">Wyczyść</button>
     </div>
   </header>
 
   <main>
-    <!-- To właśnie zapisujemy/drukujemy -->
+    <!-- To drukujemy / zapisujemy do PDF -->
     <section id="printArea" class="paper">
       <div class="doc-header">
         <div>
           <h1>Formularz klienta</h1>
-          <p class="muted">Wypełnij czytelnie. Na końcu kliknij „Zapisz PDF” lub „Drukuj”.</p>
+          <p class="muted">Krok 1: dane osobowe • Krok 2: zobowiązania • Na końcu: zapis PDF / wydruk.</p>
         </div>
         <div class="doc-meta">
           <div><span class="muted">Data:</span> <span id="today"></span></div>
@@ -40,98 +43,279 @@
         </div>
       </div>
 
-      <!-- A) DANE OSOBOWE -->
-      <section class="block">
-        <h2>Dane osobowe</h2>
+      <!-- STEPPER (tylko ekran, nie druk) -->
+      <div class="stepper no-print" aria-label="Nawigacja kroków">
+        <button class="step-pill active" id="pill1" type="button">1. Dane osobowe</button>
+        <div class="step-line"></div>
+        <button class="step-pill" id="pill2" type="button">2. Zobowiązania</button>
+      </div>
 
-        <div class="grid">
-          <label class="field">
-            <span>Imię i nazwisko</span>
-            <input type="text" name="fullName" autocomplete="name" />
-          </label>
-
-          <label class="field">
-            <span>PESEL</span>
-            <input type="text" name="pesel" inputmode="numeric" maxlength="11" />
-          </label>
-
-          <label class="field">
-            <span>Telefon</span>
-            <input type="tel" name="phone" inputmode="tel" autocomplete="tel" />
-          </label>
-
-          <label class="field">
-            <span>E-mail</span>
-            <input type="email" name="email" autocomplete="email" />
-          </label>
-
-          <label class="field full">
-            <span>Adres zamieszkania</span>
-            <input type="text" name="address" autocomplete="street-address" />
-          </label>
+      <!-- PAGE 1 -->
+      <section class="page step step-1" data-step="1">
+        <div class="page-title">
+          <h2>DANE OSOBOWE</h2>
+          <div class="muted small">Pełny zakres informacji – niezbędny do uzupełnienia wniosku</div>
         </div>
 
-        <div class="row">
-          <div class="chips">
-            <span class="muted">Stan cywilny:</span>
-            <label class="chip"><input type="radio" name="civil" value="panna/kawaler"> panna/kawaler</label>
-            <label class="chip"><input type="radio" name="civil" value="malzenstwo"> w związku małżeńskim</label>
-            <label class="chip"><input type="radio" name="civil" value="po_rozwodzie"> po rozwodzie</label>
-            <label class="chip"><input type="radio" name="civil" value="wdowa/wdowiec"> wdowa/wdowiec</label>
+        <section class="block">
+          <h3>Identyfikacja</h3>
+
+          <div class="grid">
+            <label class="field">
+              <span>Imię i nazwisko</span>
+              <input type="text" name="fullName" autocomplete="name" />
+            </label>
+
+            <label class="field">
+              <span>Nazwisko panieńskie</span>
+              <input type="text" name="maidenName" />
+            </label>
+
+            <label class="field">
+              <span>Obywatelstwo</span>
+              <input type="text" name="citizenship" />
+            </label>
+
+            <label class="field">
+              <span>PESEL</span>
+              <input type="text" name="pesel" inputmode="numeric" maxlength="11" />
+            </label>
+
+            <label class="field">
+              <span>Data urodzenia</span>
+              <input type="date" name="birthDate" />
+            </label>
+
+            <label class="field">
+              <span>Miejsce urodzenia</span>
+              <input type="text" name="birthPlace" />
+            </label>
+
+            <label class="field">
+              <span>Imiona rodziców</span>
+              <input type="text" name="parentsNames" />
+            </label>
+
+            <label class="field">
+              <span>Nazwisko panieńskie mamy</span>
+              <input type="text" name="mothersMaidenName" />
+            </label>
+
+            <label class="field">
+              <span>Dowód osobisty (seria i numer)</span>
+              <input type="text" name="idCardNumber" />
+            </label>
+
+            <label class="field">
+              <span>Dowód: data wydania</span>
+              <input type="date" name="idCardIssueDate" />
+            </label>
+
+            <label class="field">
+              <span>Dowód: data ważności</span>
+              <input type="date" name="idCardValidUntil" />
+            </label>
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>Stan cywilny</h3>
+
+          <div class="row">
+            <div class="chips">
+              <label class="chip"><input type="radio" name="civilStatus" value="panna/kawaler"> panna/kawaler</label>
+              <label class="chip"><input type="radio" name="civilStatus" value="w_związku_małżeńskim"> w związku małżeńskim</label>
+              <label class="chip"><input type="radio" name="civilStatus" value="wdowa/wdowiec"> wdowa/wdowiec</label>
+              <label class="chip"><input type="radio" name="civilStatus" value="po_rozwodzie"> po rozwodzie</label>
+            </div>
+
+            <div class="chips">
+              <span class="muted small">Rozdzielność majątkowa:</span>
+              <label class="chip"><input type="radio" name="propertySeparation" value="tak"> tak</label>
+              <label class="chip"><input type="radio" name="propertySeparation" value="nie"> nie</label>
+            </div>
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>Adresy i kontakt</h3>
+
+          <div class="grid">
+            <label class="field full">
+              <span>Adres zamieszkania (+ data od kiedy)</span>
+              <input type="text" name="addressLiving" autocomplete="street-address" />
+            </label>
+
+            <label class="field">
+              <span>Adres zameldowania (+ data od kiedy)</span>
+              <input type="text" name="addressRegistered" />
+            </label>
+
+            <label class="field">
+              <span>Adres korespondencyjny</span>
+              <input type="text" name="addressMailing" />
+            </label>
+
+            <label class="field">
+              <span>Status mieszkaniowy</span>
+              <input type="text" name="housingStatus" placeholder="np. własne / wynajmowane / przy rodzinie / inne" />
+            </label>
+
+            <label class="field">
+              <span>Telefon komórkowy</span>
+              <input type="tel" name="phone" inputmode="tel" autocomplete="tel" />
+            </label>
+
+            <label class="field">
+              <span>Adres e-mail</span>
+              <input type="email" name="email" autocomplete="email" />
+            </label>
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>Wykształcenie i praca</h3>
+
+          <div class="grid">
+            <label class="field">
+              <span>Wykształcenie</span>
+              <input type="text" name="education" />
+            </label>
+
+            <label class="field">
+              <span>Jaki zawód wykonujesz?</span>
+              <input type="text" name="jobTitle" />
+            </label>
+
+            <label class="field">
+              <span>Branża</span>
+              <input type="text" name="industry" />
+            </label>
+
+            <label class="field">
+              <span>Całkowity staż pracy</span>
+              <input type="text" name="workTenure" />
+            </label>
+
+            <label class="field">
+              <span>NIP (jeśli prowadzisz działalność)</span>
+              <input type="text" name="nip" inputmode="numeric" />
+            </label>
           </div>
 
-          <div class="chips">
-            <span class="muted">Rozdzielność:</span>
-            <label class="chip"><input type="radio" name="separation" value="tak"> tak</label>
-            <label class="chip"><input type="radio" name="separation" value="nie"> nie</label>
+          <div class="row" style="margin-top:12px;">
+            <div class="chips">
+              <span class="muted small">Źródło dochodów:</span>
+              <label class="chip"><input type="radio" name="incomeSource" value="umowa_o_pracę"> umowa o pracę</label>
+              <label class="chip"><input type="radio" name="incomeSource" value="umowa_zlecenie"> umowa zlecenie</label>
+              <label class="chip"><input type="radio" name="incomeSource" value="umowa_o_dzieło"> umowa o dzieło</label>
+              <label class="chip"><input type="radio" name="incomeSource" value="działalność"> działalność gosp.</label>
+            </div>
+
+            <div class="chips">
+              <span class="muted small">UoP:</span>
+              <label class="chip"><input type="radio" name="employmentType" value="nieokreślony"> na czas nieokreślony</label>
+              <label class="chip"><input type="radio" name="employmentType" value="określony"> na czas określony</label>
+            </div>
           </div>
+
+          <div class="grid" style="margin-top:10px;">
+            <label class="field">
+              <span>Data podpisania pierwszej umowy</span>
+              <input type="date" name="firstContractDate" />
+            </label>
+
+            <label class="field full">
+              <span>Dane pracodawcy (nazwa, adres, tel, ilość osób)</span>
+              <input type="text" name="employerDetails" />
+            </label>
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>Bank / dodatkowe</h3>
+
+          <div class="grid">
+            <label class="field full">
+              <span>Rachunek osobisty (numer konta, nazwa banku)</span>
+              <input type="text" name="bankAccount" />
+            </label>
+
+            <label class="field">
+              <span>Kredyty – ilość</span>
+              <input type="text" name="creditsCount" placeholder="np. 0 / 1 / 2 / ..." />
+            </label>
+
+            <label class="field">
+              <span>Brak zobowiązań</span>
+              <input type="text" name="noCredits" placeholder="np. TAK / NIE" />
+            </label>
+
+            <label class="field">
+              <span>Numer telefonu do osoby sprzedającej</span>
+              <input type="tel" name="sellerPhone" inputmode="tel" />
+            </label>
+          </div>
+        </section>
+
+        <div class="page-footer muted small">
+          Strona 1/2 • Dane osobowe
         </div>
       </section>
 
-      <!-- B) ZOBOWIĄZANIA -->
-      <section class="block">
-        <div class="block-head">
-          <h2>Zestawienie zobowiązań finansowych</h2>
-          <button id="btnAddDebt" class="btn small no-print">+ Dodaj zobowiązanie</button>
+      <!-- PAGE 2 -->
+      <section class="page step step-2" data-step="2">
+        <div class="page-title">
+          <h2>ZESTAWIENIE ZOBOWIĄZAŃ FINANSOWYCH</h2>
+          <div class="muted small">Hipoteczny / gotówkowy / karta / limit / leasing / firmowy</div>
         </div>
 
-        <!-- Widok na telefonie (karty) -->
-        <div id="debtsCards" class="cards no-print"></div>
+        <section class="block">
+          <div class="block-head">
+            <h3>Zobowiązania</h3>
+            <button id="btnAddDebt" class="btn small no-print" type="button">+ Dodaj zobowiązanie</button>
+          </div>
 
-        <!-- Widok do druku (tabela A4) -->
-        <table class="table print-only" aria-label="Zobowiązania">
-          <thead>
-            <tr>
-              <th>Rodzaj</th>
-              <th>Czyje</th>
-              <th>Bank</th>
-              <th>Kwota pocz.</th>
-              <th>Kwota akt.</th>
-              <th>Rata</th>
-              <th>Data umowy</th>
-              <th>Koniec</th>
-              <th>Spłacone (T/N)</th>
-            </tr>
-          </thead>
-          <tbody id="debtsTbody"></tbody>
-        </table>
+          <!-- Ekran (telefon): karty -->
+          <div id="debtsCards" class="cards no-print"></div>
 
-        <div class="hint muted">
-          Jeśli nie masz zobowiązań — zostaw puste.
-        </div>
+          <!-- Druk/PDF: tabela A4 -->
+          <table class="table print-only" aria-label="Zobowiązania">
+            <thead>
+              <tr>
+                <th>Rodzaj</th>
+                <th>Zobowiązanie</th>
+                <th>Czyje</th>
+                <th>Bank</th>
+                <th>Kwota pocz.</th>
+                <th>Kwota akt.</th>
+                <th>Rata</th>
+                <th>Data umowy</th>
+                <th>Koniec</th>
+                <th>Nr umowy</th>
+                <th>Spłacone (T/N)</th>
+              </tr>
+            </thead>
+            <tbody id="debtsTbody"></tbody>
+          </table>
+
+          <div class="hint muted">
+            Jeśli nie ma zobowiązań — zostaw puste lub usuń wiersze.
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>Podpis</h3>
+          <div class="signature">
+            <div class="line"></div>
+            <div class="muted small">Czytelny podpis klienta</div>
+          </div>
+        </section>
+
+        <footer class="doc-footer">
+          <div class="muted small">Strona 2/2 • Zestawienie zobowiązań</div>
+        </footer>
       </section>
-
-      <section class="block">
-        <h2>Podpis</h2>
-        <div class="signature">
-          <div class="line"></div>
-          <div class="muted">Czytelny podpis klienta</div>
-        </div>
-      </section>
-
-      <footer class="doc-footer">
-        <div class="muted">Wygenerowano z formularza online — wersja do druku A4</div>
-      </footer>
     </section>
   </main>
 
