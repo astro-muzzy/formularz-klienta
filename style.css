@@ -1,6 +1,5 @@
 :root{
   --bg:#0b1220;
-  --card:#0f1b33;
   --paper:#ffffff;
   --ink:#0c1222;
   --muted:#6b7280;
@@ -41,8 +40,8 @@ body{
 }
 .title{ font-weight:700; }
 .subtitle{ font-size:12px; color:rgba(232,238,252,0.75); }
-
 .actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
 .btn{
   border:1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.06);
@@ -57,6 +56,8 @@ body{
 .btn.primary:hover{ background: rgba(29,78,216,1); }
 .btn.danger{ background: rgba(185,28,28,0.9); border-color: rgba(185,28,28,1); }
 .btn.small{ padding:8px 10px; border-radius:10px; font-size:13px; }
+
+.hidden{ display:none !important; }
 
 main{ padding: 18px 12px 48px; display:flex; justify-content:center; }
 
@@ -85,9 +86,48 @@ main{ padding: 18px 12px 48px; display:flex; justify-content:center; }
   margin-bottom: 14px;
 }
 h1{ margin:0; font-size:22px; }
-h2{ margin:0 0 10px; font-size:16px; }
+h2{ margin:0; font-size:16px; letter-spacing:0.4px; }
+h3{ margin:0 0 10px; font-size:14px; }
 .muted{ color: var(--muted); }
+.small{ font-size:12px; }
 .doc-meta{ font-size:13px; text-align:right; }
+
+.stepper{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin: 8px 0 14px;
+}
+.step-pill{
+  border:1px solid var(--line);
+  background:#fff;
+  color: var(--ink);
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.step-pill.active{
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(29,78,216,0.12);
+}
+.step-line{
+  flex:1;
+  height:1px;
+  background: var(--line);
+}
+
+.page-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+  margin: 12px 0;
+}
+
+.page{
+  margin-top: 10px;
+}
 
 .block{
   border:1px solid var(--line);
@@ -154,11 +194,11 @@ h2{ margin:0 0 10px; font-size:16px; }
 .table{
   width:100%;
   border-collapse: collapse;
-  font-size:12px;
+  font-size:11px;
 }
 .table th, .table td{
   border:1px solid var(--line);
-  padding:6px 7px;
+  padding:6px 6px;
   vertical-align: top;
 }
 .table th{ background:#f3f4f6; text-align:left; }
@@ -172,8 +212,18 @@ h2{ margin:0 0 10px; font-size:16px; }
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
-  font-size: 12px;
 }
+
+.page-footer{
+  margin-top: 8px;
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+}
+
+/* Wizard screen: pokazuj tylko aktualny krok */
+.step{ display:none; }
+body[data-step="1"] .step-1{ display:block; }
+body[data-step="2"] .step-2{ display:block; }
 
 /* PRINT */
 .print-only{ display:none; }
@@ -185,7 +235,7 @@ h2{ margin:0 0 10px; font-size:16px; }
   #printArea{
     box-shadow:none;
     border-radius:0;
-    padding: 12mm;
+    padding: 10mm;
   }
   @page{
     size: A4;
@@ -193,5 +243,18 @@ h2{ margin:0 0 10px; font-size:16px; }
   }
   .print-only{ display: table; }
   .cards{ display:none !important; }
+
+  /* Druk: pokaż obie strony + wymuś page break */
+  .step{ display:block !important; }
+  .page{ page-break-after: always; }
+  .page:last-child{ page-break-after: auto; }
+
   .block{ page-break-inside: avoid; }
 }
+
+/* PDF generation: pokaż wszystko podczas renderu */
+body.force-print .step{ display:block !important; }
+body.force-print .cards{ display:none !important; }
+body.force-print .print-only{ display: table; }
+body.force-print .page{ page-break-after: always; }
+body.force-print .page:last-child{ page-break-after: auto; }
