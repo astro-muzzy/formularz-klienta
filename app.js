@@ -1,4 +1,238 @@
-(function(){
+// ===== CONFIG =====
+const STORAGE_KEY = "formularz_klienta_v2";
+
+// ===== STATE =====
+let currentStep = 1;
+
+// ===== INIT =====
+document.addEventListener("DOMContentLoaded", () => {
+  loadFormData();
+  setupEvents();
+  showStep(1);
+});
+
+// ===== EVENTS =====
+function setupEvents() {
+  document.getElementById("btnNext")?.addEventListener("click", () => {
+    saveFormData();
+    showStep(2);
+  });
+
+  document.getElementById("btnBack")?.addEventListener("click", () => {
+    showStep(1);
+  });
+
+  document.getElementById("btnClear")?.addEventListener("click", () => {
+    if (confirm("Na pewno wyczyścić formularz?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+
+  document.getElementById("btnPrint")?.addEventListener("click", () => {
+    window.print();
+  });
+
+  document.getElementById("btnPdf")?.addEventListener("click", generatePDF);
+
+  document
+    .getElementById("addCommitmentBtn")
+    ?.addEventListener("click", addCommitment);
+
+  document
+    .getElementById("commitmentsContainer")
+    ?.addEventListener("click", function (e) {
+      if (e.target.classList.contains("remove-btn")) {
+        e.target.closest(".commitment-card")?.remove();
+        updateCommitmentsTable();
+      }
+    });
+
+  document.addEventListener("input", () => {
+    saveFormData();
+    updateCommitmentsTable();
+  });
+}
+
+// ===== STEP HANDLING =====
+function showStep(step) {
+  currentStep = step;
+
+  document.querySelectorAll(".form-step").forEach((el) => {
+    el.style.display = "none";
+  });
+
+  document.getElementById(`step${step}`).style.display = "block";
+
+  document.getElementById("btnBack").style.display =
+    step === 1 ? "none" : "inline-block";
+
+  document.getElementById("btnNext").style.display =
+    step === 2 ? "none" : "inline-block";
+
+  document.getElementById("btnPdf").style.display =
+    step === 2 ? "inline-block" : "none";
+
+  document.getElementById("btnPrint").style.display =
+    step === 2 ? "inline-block" : "none";
+
+  updateStepper();
+
+  // smooth scroll + focus
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  setTimeout(() => {
+    const firstInput = document.querySelector(
+      `#step${step} input, #step${step} select`
+    );
+    firstInput?.focus();
+  }, 200);
+}
+
+function updateStepper() {
+  document.querySelectorAll(".step-pill").forEach((el) => {
+    el.classList.remove("active");
+  });
+
+  document
+    .querySelector(`.step-pill[data-step="${currentStep}"]`)
+    ?.classList.add("active");
+}
+
+// ===== STORAGE =====
+function saveFormData() {
+  const data = {};
+
+  document.querySelectorAll("input, select").forEach((el) => {
+    if (el.type === "radio") {
+      if (el.checked) data[el.name] = el.value;
+    } else {
+      data[el.name] = el.value;
+    }
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadFormData() {
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+  document.querySelectorAll("input, select").forEach((el) => {
+    if (el.type === "radio") {
+      if (data[el.name] === el.value) el.checked = true;
+    } else {
+      if (data[el.name]) el.value = data[el.name];
+    }
+  });
+}
+
+// ===== COMMITMENTS =====
+function addCommitment() {
+  const container = document.getElementById("commitmentsContainer");
+
+  const div = document.createElement("div");
+  div.className = "commitment-card";
+
+  div.innerHTML = `
+    <div class="card-grid">
+      <div class="field">
+        <label>Rodzaj</label>
+        <input type="text" name="rodzaj[]" placeholder="np. kredyt hipoteczny">
+      </div>
+
+      <div class="field">
+        <label>Zobowiązanie</label>
+        <input type="text" name="zobowiazanie[]">
+      </div>
+
+      <div class="field">
+        <label>Kwota początkowa</label>
+        <input type="number" name="kwotaPoczatkowa[]">
+      </div>
+
+      <div class="field">
+        <label>Kwota aktualna</label>
+        <input type="number" name="kwotaAktualna[]">
+      </div>
+
+      <div class="field">
+        <label>Rata</label>
+        <input type="number" name="rata[]">
+      </div>
+
+      <div class="field">
+        <label>Bank</label>
+        <input type="text" name="bank[]">
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-danger remove-btn">Usuń</button>
+  `;
+
+  container.appendChild(div);
+
+  showToast("Dodano zobowiązanie");
+}
+
+// ===== TABLE FOR PDF =====
+function updateCommitmentsTable() {
+  const tbody = document.querySelector("#commitmentsTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  const cards = document.querySelectorAll(".commitment-card");
+
+  cards.forEach((card) => {
+    const values = card.querySelectorAll("input");
+
+    const row = document.createElement("tr");
+
+    values.forEach((input) => {
+      const td = document.createElement("td");
+      td.textContent = input.value || "-";
+      row.appendChild(td);
+    });
+
+    tbody.appendChild(row);
+  });
+}
+
+// ===== PDF =====
+function generatePDF() {
+  const element = document.getElementById("printArea");
+
+  const opt = {
+    margin: 10,
+    filename: "formularz_klienta.pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  };
+
+  html2pdf().set(opt).from(element).save();
+
+  showToast("PDF zapisany");
+}
+
+// ===== TOAST =====
+function showToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerText = message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("show");
+  }, 50);
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 2000);
+}
+
+/*(function(){
   const $ = (sel) => document.querySelector(sel);
 
   const printArea = $("#printArea");
@@ -292,3 +526,4 @@
   // Apply current step
   setStep(state.step);
 })();
+*/
