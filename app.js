@@ -1,7 +1,5 @@
 (function () {
-  const $ = function (sel) {
-    return document.querySelector(sel);
-  };
+  const $ = (sel) => document.querySelector(sel);
 
   const printArea = $("#printArea");
   const today = $("#today");
@@ -115,7 +113,7 @@
       return;
     }
 
-    var firstField = printArea.querySelector(".step-" + step + " input, .step-" + step + " select");
+    var firstField = printArea.querySelector('.step-' + step + ' input, .step-' + step + ' select');
     if (firstField) {
       window.setTimeout(function () {
         try {
@@ -319,267 +317,343 @@
     return state.person && state.person[name] ? state.person[name] : "";
   }
 
-  function pdfSafe(value) {
+  function getDebtRows() {
+    return (state.debts || []).filter(function (debt) {
+      return [
+        debt.type,
+        debt.obligation,
+        debt.owner,
+        debt.bank,
+        debt.amountStart,
+        debt.amountNow,
+        debt.installment,
+        debt.dateStart,
+        debt.dateEnd,
+        debt.contractNo,
+        debt.willBePaid
+      ].some(function (value) {
+        return String(value || "").trim() !== "";
+      });
+    });
+  }
+
+  function normalizePdfText(value) {
     var text = String(value == null ? "" : value).trim();
-    if (!text) {
-      return '<span class="pdf-field-value empty">—</span>';
-    }
-    return '<span class="pdf-field-value">' + escapeHtml(text) + '</span>';
-  }
-
-  function pdfField(label, value) {
-    return (
-      '<div class="pdf-field">' +
-        '<span class="pdf-field-label">' + escapeHtml(label) + '</span>' +
-        pdfSafe(value) +
-      '</div>'
-    );
-  }
-
-  function pdfDebtCard(debt, index) {
-    return (
-      '<div class="pdf-debt-card">' +
-        '<h4 class="pdf-debt-title">Zobowiązanie ' + (index + 1) + '</h4>' +
-        '<div class="pdf-grid-2">' +
-          pdfField("Rodzaj zobowiązania", debt.type) +
-          pdfField("Zobowiązanie", debt.obligation) +
-          pdfField("Czyje zobowiązanie", debt.owner) +
-          pdfField("Jaki bank", debt.bank) +
-          pdfField("Kwota początkowa", debt.amountStart) +
-          pdfField("Kwota aktualna", debt.amountNow) +
-          pdfField("Wysokość raty", debt.installment) +
-          pdfField("Nr umowy", debt.contractNo) +
-          pdfField("Data podpisania umowy", debt.dateStart) +
-          pdfField("Data zakończenia", debt.dateEnd) +
-          pdfField("Czy zostanie spłacone", debt.willBePaid) +
-        '</div>' +
-      '</div>'
-    );
-  }
-
-  function buildPdfDocument() {
-    var debtsHtml = "";
-
-    if (!state.debts || state.debts.length === 0) {
-      debtsHtml =
-        '<div class="pdf-debt-card">' +
-          '<h4 class="pdf-debt-title">Brak zobowiązań</h4>' +
-          '<div class="pdf-grid-1">' +
-            pdfField("Informacja", "Klient nie posiada zobowiązań lub sekcja nie została uzupełniona.") +
-          '</div>' +
-        '</div>';
-    } else {
-      debtsHtml = state.debts.map(function (debt, index) {
-        return pdfDebtCard(debt, index);
-      }).join("");
-    }
-
-    return (
-      '<div class="pdf-document">' +
-
-        '<section class="pdf-page">' +
-          '<header class="pdf-header">' +
-            '<div class="pdf-header-top">Formularz operacyjny klienta</div>' +
-            '<div class="pdf-header-grid">' +
-              '<div>' +
-                '<h1 class="pdf-title">Formularz klienta</h1>' +
-                '<p class="pdf-subtitle">Dane osobowe i zobowiązania finansowe w uporządkowanym, eleganckim układzie dokumentowym. Wersja PDF przeznaczona do wydruku, podpisu i archiwizacji.</p>' +
-              '</div>' +
-              '<div class="pdf-meta">' +
-                '<div class="pdf-meta-row">' +
-                  '<span class="pdf-meta-label">Data</span>' +
-                  '<span class="pdf-meta-value">' + escapeHtml(formatDate(new Date())) + '</span>' +
-                '</div>' +
-                '<div class="pdf-meta-row">' +
-                  '<span class="pdf-meta-label">Wersja</span>' +
-                  '<span class="pdf-meta-value">2.0</span>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-          '</header>' +
-
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 1</div>' +
-                '<h2 class="pdf-section-title">Dane osobowe</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Podstawowe dane identyfikacyjne klienta.</div>' +
-            '</div>' +
-            '<div class="pdf-card">' +
-              '<div class="pdf-grid-2">' +
-                pdfField("Imię i nazwisko", getValue("fullName")) +
-                pdfField("Nazwisko panieńskie", getValue("maidenName")) +
-                pdfField("Obywatelstwo", getValue("citizenship")) +
-                pdfField("PESEL", getValue("pesel")) +
-                pdfField("Data urodzenia", getValue("birthDate")) +
-                pdfField("Miejsce urodzenia", getValue("birthPlace")) +
-                pdfField("Imiona rodziców", getValue("parentsNames")) +
-                pdfField("Nazwisko panieńskie mamy", getValue("mothersMaidenName")) +
-                pdfField("Dowód osobisty — seria i numer", getValue("idCardNumber")) +
-                pdfField("Dowód — data wydania", getValue("idCardIssueDate")) +
-                pdfField("Dowód — data ważności", getValue("idCardValidUntil")) +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 2</div>' +
-                '<h2 class="pdf-section-title">Stan cywilny</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Informacje potrzebne do oceny sytuacji majątkowej.</div>' +
-            '</div>' +
-            '<div class="pdf-card">' +
-              '<div class="pdf-grid-2">' +
-                pdfField("Stan cywilny", getValue("civilStatus")) +
-                pdfField("Rozdzielność majątkowa", getValue("propertySeparation")) +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 3</div>' +
-                '<h2 class="pdf-section-title">Adresy i kontakt</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Dane kontaktowe i adresowe klienta.</div>' +
-            '</div>' +
-            '<div class="pdf-card">' +
-              '<div class="pdf-grid-2">' +
-                pdfField("Adres zamieszkania + od kiedy", getValue("addressLiving")) +
-                pdfField("Adres zameldowania + od kiedy", getValue("addressRegistered")) +
-                pdfField("Adres korespondencyjny", getValue("addressMailing")) +
-                pdfField("Status mieszkaniowy", getValue("housingStatus")) +
-                pdfField("Telefon komórkowy", getValue("phone")) +
-                pdfField("Adres e-mail", getValue("email")) +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-
-          '<div class="pdf-footer">Strona 1/2 • Dane klienta</div>' +
-        '</section>' +
-
-        '<section class="pdf-page">' +
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 4</div>' +
-                '<h2 class="pdf-section-title">Wykształcenie i praca</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Źródło dochodu i aktualna sytuacja zawodowa.</div>' +
-            '</div>' +
-            '<div class="pdf-card">' +
-              '<div class="pdf-grid-2">' +
-                pdfField("Wykształcenie", getValue("education")) +
-                pdfField("Jaki zawód wykonujesz", getValue("jobTitle")) +
-                pdfField("Branża", getValue("industry")) +
-                pdfField("Całkowity staż pracy", getValue("workTenure")) +
-                pdfField("NIP (jeśli prowadzisz działalność)", getValue("nip")) +
-                pdfField("Źródło dochodów", getValue("incomeSource")) +
-                pdfField("Rodzaj umowy o pracę", getValue("employmentType")) +
-                pdfField("Data podpisania pierwszej umowy", getValue("firstContractDate")) +
-              '</div>' +
-              '<div class="pdf-grid-1" style="margin-top:3.5mm;">' +
-                pdfField("Dane pracodawcy (nazwa, adres, tel, ilość osób)", getValue("employerDetails")) +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 5</div>' +
-                '<h2 class="pdf-section-title">Bank i informacje dodatkowe</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Informacje uzupełniające do procesu finansowego.</div>' +
-            '</div>' +
-            '<div class="pdf-card">' +
-              '<div class="pdf-grid-2">' +
-                pdfField("Rachunek osobisty (numer konta, nazwa banku)", getValue("bankAccount")) +
-                pdfField("Kredyty — ilość", getValue("creditsCount")) +
-                pdfField("Brak zobowiązań", getValue("noCredits")) +
-                pdfField("Numer telefonu do osoby sprzedającej", getValue("sellerPhone")) +
-              '</div>' +
-            '</div>' +
-          '</section>' +
-
-          '<section class="pdf-section">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 6</div>' +
-                '<h2 class="pdf-section-title">Zestawienie zobowiązań</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Kredyty, limity, karty, leasing i inne zobowiązania.</div>' +
-            '</div>' +
-            '<div class="pdf-debt-list">' +
-              debtsHtml +
-            '</div>' +
-          '</section>' +
-
-          '<section class="pdf-section pdf-signature">' +
-            '<div class="pdf-section-header">' +
-              '<div>' +
-                '<div class="pdf-section-kicker">Sekcja 7</div>' +
-                '<h2 class="pdf-section-title">Podpis klienta</h2>' +
-              '</div>' +
-              '<div class="pdf-section-note">Miejsce na podpis po wydruku dokumentu.</div>' +
-            '</div>' +
-            '<div class="pdf-signature-line">Czytelny podpis klienta</div>' +
-          '</section>' +
-
-          '<div class="pdf-footer">Strona 2/2 • Dane zawodowe i zobowiązania</div>' +
-        '</section>' +
-
-      '</div>'
-    );
+    return text || "—";
   }
 
   function savePdf() {
-    if (typeof html2pdf === "undefined") {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
       alert("Biblioteka PDF nie została załadowana.");
       return;
     }
 
-    var host = document.createElement("div");
-    host.className = "pdf-export-host";
-    host.innerHTML = buildPdfDocument();
+    var jsPDF = window.jspdf.jsPDF;
+    var doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+      compress: true
+    });
 
-    document.body.appendChild(host);
+    var pageWidth = 210;
+    var pageHeight = 297;
+    var marginX = 12;
+    var contentWidth = pageWidth - (marginX * 2);
+    var y = 12;
 
-    var pdfRoot = host.firstElementChild;
-
-    var options = {
-      margin: 0,
-      filename: "formularz_klienta_" + formatDate(new Date()) + ".pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-      },
-      jsPDF: {
-        unit: "mm",
-        format: "a4",
-        orientation: "portrait"
-      },
-      pagebreak: {
-        mode: ["css", "legacy"]
+    function setTextColor(hex) {
+      var clean = String(hex || "000000").replace("#", "");
+      if (clean.length !== 6) {
+        clean = "000000";
       }
-    };
+      doc.setTextColor(
+        parseInt(clean.substring(0, 2), 16),
+        parseInt(clean.substring(2, 4), 16),
+        parseInt(clean.substring(4, 6), 16)
+      );
+    }
 
-    html2pdf()
-      .set(options)
-      .from(pdfRoot)
-      .save()
-      .then(function () {
-        showToast("PDF został zapisany.");
-      })
-      .finally(function () {
-        host.remove();
+    function line(x1, y1, x2, y2, color, width) {
+      doc.setDrawColor(color || 220, color || 220, color || 220);
+      doc.setLineWidth(width || 0.2);
+      doc.line(x1, y1, x2, y2);
+    }
+
+    function topAccent() {
+      doc.setFillColor(37, 99, 235);
+      doc.rect(marginX, 8, contentWidth, 0.9, "F");
+    }
+
+    function drawMetaBox(x, yy, label, value, w) {
+      doc.setDrawColor(219, 228, 241);
+      doc.setFillColor(248, 251, 255);
+      doc.roundedRect(x, yy, w, 12, 2, 2, "FD");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.5);
+      setTextColor("64748b");
+      doc.text(String(label).toUpperCase(), x + 2.5, yy + 4);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      setTextColor("0f172a");
+      doc.text(normalizePdfText(value), x + 2.5, yy + 8.6);
+    }
+
+    function drawFooter(pageNo) {
+      line(marginX, 287, pageWidth - marginX, 287, 219, 0.2);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setTextColor("64748b");
+      var footerText = pageNo === 1
+        ? "Strona 1/2 • Dane klienta"
+        : "Strona 2/2 • Dane zawodowe i zobowiązania";
+      doc.text(footerText, marginX, 291.5);
+    }
+
+    function drawHeader(pageNo) {
+      topAccent();
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      setTextColor("2563eb");
+      doc.text("FORMULARZ OPERACYJNY KLIENTA", marginX, 14);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      setTextColor("0f172a");
+      doc.text("Formularz klienta", marginX, 21.5);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.3);
+      setTextColor("475569");
+      var subtitle = doc.splitTextToSize(
+        "Wersja dokumentowa PDF. Układ przygotowany pod zapis i wydruk A4 bez rozsypywania stron.",
+        112
+      );
+      doc.text(subtitle, marginX, 26.5);
+
+      drawMetaBox(162, 17, "Data", formatDate(new Date()), 36);
+      drawMetaBox(162, 31, "Wersja", "2.1", 36);
+
+      y = 49;
+      drawFooter(pageNo);
+    }
+
+    function drawSectionHeader(kicker, title, note) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      setTextColor("2563eb");
+      doc.text(String(kicker).toUpperCase(), marginX, y);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      setTextColor("0f172a");
+      doc.text(title, marginX, y + 4.6);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6.8);
+      setTextColor("64748b");
+      var split = doc.splitTextToSize(note, 58);
+      doc.text(split, pageWidth - marginX, y + 3.8, { align: "right" });
+
+      y += 7.5;
+    }
+
+    function drawFieldBox(x, yy, w, h, label, value) {
+      doc.setDrawColor(226, 232, 240);
+      doc.setFillColor(248, 251, 255);
+      doc.roundedRect(x, yy, w, h, 2.2, 2.2, "FD");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.8);
+      setTextColor("64748b");
+      doc.text(String(label).toUpperCase(), x + 2, yy + 3.5);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.3);
+      setTextColor(normalizePdfText(value) === "—" ? "94a3b8" : "0f172a");
+      var lines = doc.splitTextToSize(normalizePdfText(value), w - 4);
+      doc.text(lines.slice(0, 2), x + 2, yy + 8);
+    }
+
+    function drawFieldGrid(items, cols) {
+      var colGap = 4;
+      var rowGap = 3;
+      var colWidth = (contentWidth - (colGap * (cols - 1))) / cols;
+      var boxHeight = 13;
+      var i;
+
+      for (i = 0; i < items.length; i += cols) {
+        var row = items.slice(i, i + cols);
+        row.forEach(function (item, index) {
+          var boxX = marginX + (index * (colWidth + colGap));
+          drawFieldBox(boxX, y, colWidth, boxHeight, item.label, item.value);
+        });
+        y += boxHeight + rowGap;
+      }
+    }
+
+    function drawWideField(label, value) {
+      drawFieldBox(marginX, y, contentWidth, 13, label, value);
+      y += 16;
+    }
+
+    function drawDebtTable(debts) {
+      var headers = ["Rodzaj", "Zobowiązanie", "Bank", "Kwota akt.", "Rata", "Spłata"];
+      var widths = [28, 52, 30, 24, 22, 18];
+      var x = marginX;
+      var i;
+
+      doc.setFillColor(238, 244, 251);
+      doc.setDrawColor(216, 225, 238);
+      doc.rect(marginX, y, contentWidth, 8, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      setTextColor("0f172a");
+
+      for (i = 0; i < headers.length; i++) {
+        doc.text(headers[i], x + 1.8, y + 5.2);
+        x += widths[i];
+      }
+
+      y += 8;
+
+      if (!debts.length) {
+        doc.setDrawColor(216, 225, 238);
+        doc.rect(marginX, y, contentWidth, 10, "S");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        setTextColor("64748b");
+        doc.text("Brak zobowiązań do wykazania.", marginX + 2, y + 6);
+        y += 12;
+        return;
+      }
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.2);
+
+      debts.slice(0, 8).forEach(function (debt) {
+        var values = [
+          normalizePdfText(debt.type),
+          normalizePdfText(debt.obligation),
+          normalizePdfText(debt.bank),
+          normalizePdfText(debt.amountNow),
+          normalizePdfText(debt.installment),
+          normalizePdfText(debt.willBePaid)
+        ];
+
+        var rowHeight = 10;
+        var xPos = marginX;
+
+        doc.setDrawColor(216, 225, 238);
+        doc.rect(marginX, y, contentWidth, rowHeight, "S");
+
+        values.forEach(function (val, index) {
+          var cellWidth = widths[index];
+          var lines = doc.splitTextToSize(val, cellWidth - 3);
+          doc.text(lines.slice(0, 2), xPos + 1.5, y + 4.2);
+          xPos += cellWidth;
+
+          if (index < values.length - 1) {
+            line(xPos, y, xPos, y + rowHeight, 216, 0.2);
+          }
+        });
+
+        y += rowHeight;
       });
+
+      if (debts.length > 8) {
+        y += 3;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        setTextColor("64748b");
+        doc.text("W dokumencie pokazano pierwszych 8 zobowiązań. Pozostałe wymagają osobnego zestawienia.", marginX, y);
+        y += 4;
+      }
+    }
+
+    function drawSignature() {
+      y += 6;
+      drawSectionHeader("Sekcja 7", "Podpis klienta", "Miejsce na podpis po wydruku dokumentu.");
+      line(marginX, y + 10, marginX + 70, y + 10, 15, 0.25);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setTextColor("64748b");
+      doc.text("Czytelny podpis klienta", marginX, y + 15);
+    }
+
+    drawHeader(1);
+
+    drawSectionHeader("Sekcja 1", "Dane osobowe", "Podstawowe dane identyfikacyjne klienta.");
+    drawFieldGrid([
+      { label: "Imię i nazwisko", value: getValue("fullName") },
+      { label: "Nazwisko panieńskie", value: getValue("maidenName") },
+      { label: "Obywatelstwo", value: getValue("citizenship") },
+      { label: "PESEL", value: getValue("pesel") },
+      { label: "Data urodzenia", value: getValue("birthDate") },
+      { label: "Miejsce urodzenia", value: getValue("birthPlace") },
+      { label: "Imiona rodziców", value: getValue("parentsNames") },
+      { label: "Nazwisko panieńskie mamy", value: getValue("mothersMaidenName") },
+      { label: "Dowód osobisty — seria i numer", value: getValue("idCardNumber") },
+      { label: "Dowód — data wydania", value: getValue("idCardIssueDate") },
+      { label: "Dowód — data ważności", value: getValue("idCardValidUntil") }
+    ], 2);
+
+    y += 2;
+    drawSectionHeader("Sekcja 2", "Stan cywilny", "Informacje potrzebne do oceny sytuacji majątkowej.");
+    drawFieldGrid([
+      { label: "Stan cywilny", value: getValue("civilStatus") },
+      { label: "Rozdzielność majątkowa", value: getValue("propertySeparation") }
+    ], 2);
+
+    y += 2;
+    drawSectionHeader("Sekcja 3", "Adresy i kontakt", "Dane kontaktowe i adresowe klienta.");
+    drawFieldGrid([
+      { label: "Adres zamieszkania + od kiedy", value: getValue("addressLiving") },
+      { label: "Adres zameldowania + od kiedy", value: getValue("addressRegistered") },
+      { label: "Adres korespondencyjny", value: getValue("addressMailing") },
+      { label: "Status mieszkaniowy", value: getValue("housingStatus") },
+      { label: "Telefon komórkowy", value: getValue("phone") },
+      { label: "Adres e-mail", value: getValue("email") }
+    ], 2);
+
+    doc.addPage();
+    drawHeader(2);
+
+    drawSectionHeader("Sekcja 4", "Wykształcenie i praca", "Źródło dochodu i aktualna sytuacja zawodowa.");
+    drawFieldGrid([
+      { label: "Wykształcenie", value: getValue("education") },
+      { label: "Jaki zawód wykonujesz", value: getValue("jobTitle") },
+      { label: "Branża", value: getValue("industry") },
+      { label: "Całkowity staż pracy", value: getValue("workTenure") },
+      { label: "NIP (jeśli prowadzisz działalność)", value: getValue("nip") },
+      { label: "Źródło dochodów", value: getValue("incomeSource") },
+      { label: "Rodzaj umowy o pracę", value: getValue("employmentType") },
+      { label: "Data podpisania pierwszej umowy", value: getValue("firstContractDate") }
+    ], 2);
+
+    drawWideField("Dane pracodawcy (nazwa, adres, tel, ilość osób)", getValue("employerDetails"));
+
+    drawSectionHeader("Sekcja 5", "Bank i informacje dodatkowe", "Informacje uzupełniające do procesu finansowego.");
+    drawFieldGrid([
+      { label: "Rachunek osobisty (numer konta, nazwa banku)", value: getValue("bankAccount") },
+      { label: "Kredyty — ilość", value: getValue("creditsCount") },
+      { label: "Brak zobowiązań", value: getValue("noCredits") },
+      { label: "Numer telefonu do osoby sprzedającej", value: getValue("sellerPhone") }
+    ], 2);
+
+    y += 2;
+    drawSectionHeader("Sekcja 6", "Zestawienie zobowiązań", "Układ uproszczony dla stabilnego PDF 2-stronicowego.");
+    drawDebtTable(getDebtRows());
+
+    drawSignature();
+
+    doc.save("formularz_klienta_" + formatDate(new Date()) + ".pdf");
+    showToast("PDF został zapisany.");
   }
 
   function clearAll() {
