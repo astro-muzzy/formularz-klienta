@@ -831,7 +831,7 @@ body.force-print .cards{ display:none !important; }
 body.force-print .print-only{ display:table; }
 body.force-print .page{ page-break-after:always; }
 body.force-print .page:last-child{ page-break-after:auto; }
-
+/* STARA WERSJA PDF */
 .pdf-export {
   background: #fff !important;
   color: #000 !important;
@@ -877,4 +877,244 @@ body.force-print .page:last-child{ page-break-after:auto; }
 .pdf-export {
   width: 210mm !important;
   max-width: 210mm !important;
+}
+/* ------------------------------------------ */
+
+/* =========================
+   PDF TEMPLATE ONLY
+========================= */
+
+.pdf-document {
+  width: 210mm;
+  background: #ffffff;
+  color: #0f172a;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.pdf-page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 12mm 12mm 12mm 12mm;
+  box-sizing: border-box;
+  background: #ffffff;
+  page-break-after: always;
+  break-after: page;
+}
+
+.pdf-page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.pdf-header {
+  border-top: 3px solid #2563eb;
+  padding-top: 5mm;
+  margin-bottom: 8mm;
+}
+
+.pdf-header-top {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 3mm;
+}
+
+.pdf-header-grid {
+  display: grid;
+  grid-template-columns: 1fr 42mm;
+  gap: 8mm;
+  align-items: start;
+}
+
+.pdf-title {
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 3mm 0;
+  color: #0f172a;
+}
+
+.pdf-subtitle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.pdf-meta {
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pdf-meta-row {
+  padding: 3mm 4mm;
+  border-bottom: 1px solid #dbe3f0;
+}
+
+.pdf-meta-row:last-child {
+  border-bottom: none;
+}
+
+.pdf-meta-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 1mm;
+}
+
+.pdf-meta-value {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pdf-section {
+  margin-bottom: 7mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 8mm;
+  margin-bottom: 3mm;
+  padding-bottom: 2mm;
+  border-bottom: 1px solid #dbe3f0;
+}
+
+.pdf-section-kicker {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 1mm;
+}
+
+.pdf-section-title {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #0f172a;
+  margin: 0;
+}
+
+.pdf-section-note {
+  font-size: 10px;
+  color: #64748b;
+  text-align: right;
+  line-height: 1.4;
+}
+
+.pdf-card {
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  padding: 4mm;
+  background: #ffffff;
+}
+
+.pdf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.5mm 4mm;
+}
+
+.pdf-grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3.5mm;
+}
+
+.pdf-field {
+  min-height: 16mm;
+}
+
+.pdf-field-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 1.5mm;
+}
+
+.pdf-field-value {
+  display: block;
+  min-height: 8mm;
+  padding: 2.2mm 2.8mm;
+  border: 1px solid #dbe3f0;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #0f172a;
+  background: #fbfdff;
+  word-break: break-word;
+}
+
+.pdf-field-value.empty {
+  color: #94a3b8;
+}
+
+.pdf-debt-list {
+  display: grid;
+  gap: 4mm;
+}
+
+.pdf-debt-card {
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  padding: 4mm;
+  background: #ffffff;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-debt-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 3mm 0;
+}
+
+.pdf-signature {
+  margin-top: 10mm;
+}
+
+.pdf-signature-line {
+  width: 70mm;
+  border-top: 1px solid #64748b;
+  margin-top: 12mm;
+  padding-top: 2mm;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.pdf-footer {
+  margin-top: 6mm;
+  padding-top: 3mm;
+  border-top: 1px dashed #dbe3f0;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.pdf-export-host {
+  position: fixed;
+  left: -99999px;
+  top: 0;
+  z-index: -1;
+}
+
+@media print {
+  .pdf-export-host {
+    position: static;
+    left: auto;
+    top: auto;
+  }
 }
