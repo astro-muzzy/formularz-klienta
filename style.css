@@ -831,3 +831,50 @@ body.force-print .cards{ display:none !important; }
 body.force-print .print-only{ display:table; }
 body.force-print .page{ page-break-after:always; }
 body.force-print .page:last-child{ page-break-after:auto; }
+
+.pdf-export {
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.pdf-export .step {
+  display: block !important;
+}
+
+.pdf-export .cards {
+  display: none !important;
+}
+
+.pdf-export .print-only {
+  display: table !important;
+}
+
+.pdf-export .page {
+  page-break-after: always;
+  break-after: page;
+}
+
+.pdf-export .page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.pdf-export .block {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  box-shadow: none !important;
+}
+
+.pdf-export .premium-bar,
+.pdf-export .toast,
+.pdf-export .no-print {
+  display: none !important;
+}
+
+.pdf-export .paper,
+.pdf-export {
+  width: 210mm !important;
+  max-width: 210mm !important;
+}
