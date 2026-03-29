@@ -313,35 +313,111 @@
     });
   }
 
-  function savePdf() {
-    if (typeof html2pdf === "undefined" || !printArea) {
-      alert("Biblioteka PDF nie została załadowana.");
-      return;
-    }
-
-    var options = {
-      margin: 6,
-      filename: "formularz_klienta_" + formatDate(new Date()) + ".pdf",
-      image: { type: "jpeg", quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: ["css", "legacy"] }
-    };
-
-    document.body.classList.add("force-print");
-
-    html2pdf()
-      .set(options)
-      .from(printArea)
-      .save()
-      .then(function () {
-        showToast("PDF został zapisany.");
-      })
-      .finally(function () {
-        document.body.classList.remove("force-print");
-      });
+function savePdf() {
+  if (typeof html2pdf === "undefined" || !printArea) {
+    alert("Biblioteka PDF nie została załadowana.");
+    return;
   }
 
+  var exportNode = printArea.cloneNode(true);
+
+  exportNode.id = "pdfExportArea";
+  exportNode.classList.add("pdf-export");
+
+  // pokaż oba kroki
+  exportNode.querySelectorAll(".step").forEach(function (step) {
+    step.style.display = "block";
+  });
+
+  // usuń elementy ekranowe / interakcyjne
+  exportNode.querySelectorAll(".no-print").forEach(function (el) {
+    el.remove();
+  });
+
+  // ukryj wersję kart ekranowych
+  exportNode.querySelectorAll(".cards").forEach(function (el) {
+    el.style.display = "none";
+  });
+
+  // pokaż tabelę PDF
+  exportNode.querySelectorAll(".print-only").forEach(function (el) {
+    el.style.display = "table";
+  });
+
+  // odtwórz tabelę zobowiązań z aktualnego state
+  var tbody = exportNode.querySelector("#debtsTbody");
+  if (tbody) {
+    tbody.innerHTML = "";
+
+    state.debts.forEach(function (debt) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + escapeHtml(debt.type || "") + "</td>" +
+        "<td>" + escapeHtml(debt.obligation || "") + "</td>" +
+        "<td>" + escapeHtml(debt.owner || "") + "</td>" +
+        "<td>" + escapeHtml(debt.bank || "") + "</td>" +
+        "<td>" + escapeHtml(debt.amountStart || "") + "</td>" +
+        "<td>" + escapeHtml(debt.amountNow || "") + "</td>" +
+        "<td>" + escapeHtml(debt.installment || "") + "</td>" +
+        "<td>" + escapeHtml(debt.dateStart || "") + "</td>" +
+        "<td>" + escapeHtml(debt.dateEnd || "") + "</td>" +
+        "<td>" + escapeHtml(debt.contractNo || "") + "</td>" +
+        "<td>" + escapeHtml(debt.willBePaid || "") + "</td>";
+      tbody.appendChild(tr);
+    });
+
+    if (state.debts.length === 0) {
+      var emptyRow = document.createElement("tr");
+      emptyRow.innerHTML =
+        '<td colspan="11" style="text-align:center;">Brak zobowiązań</td>';
+      tbody.appendChild(emptyRow);
+    }
+  }
+
+  // styl exportu poza ekranem
+  exportNode.style.position = "fixed";
+  exportNode.style.left = "-99999px";
+  exportNode.style.top = "0";
+  exportNode.style.width = "210mm";
+  exportNode.style.maxWidth = "210mm";
+  exportNode.style.background = "#ffffff";
+  exportNode.style.color = "#000000";
+  exportNode.style.borderRadius = "0";
+  exportNode.style.boxShadow = "none";
+  exportNode.style.padding = "10mm";
+
+  document.body.appendChild(exportNode);
+
+  var options = {
+    margin: 0,
+    filename: "formularz_klienta_" + formatDate(new Date()) + ".pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff"
+    },
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait"
+    },
+    pagebreak: {
+      mode: ["css", "legacy"]
+    }
+  };
+
+  html2pdf()
+    .set(options)
+    .from(exportNode)
+    .save()
+    .then(function () {
+      showToast("PDF został zapisany.");
+    })
+    .finally(function () {
+      exportNode.remove();
+    });
+}
   function clearAll() {
     if (!window.confirm("Wyczyścić wszystkie pola?")) {
       return;
