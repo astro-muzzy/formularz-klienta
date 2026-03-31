@@ -11,16 +11,16 @@
 
   const btnBack = $("#btnBack");
   const btnNext = $("#btnNext");
-  const btnSavePdf = $("#btnSavePdf");
-  const btnPrint = $("#btnPrint");
+  const btnSend = $("#btnSend");
   const btnClear = $("#btnClear");
   const btnAddDebt = $("#btnAddDebt");
 
   const debtsCards = $("#debtsCards");
-  const debtsTbody = $("#debtsTbody");
 
-  const STORAGE_KEY = "hd_form_wizard_v2_premium";
+  const STORAGE_KEY = "hd_form_wizard_email_v1";
   const TOTAL_STEPS = 2;
+
+  const HANIA_EMAIL = "hania@twojadomena.pl";
 
   const state = {
     step: 1,
@@ -64,7 +64,7 @@
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(function () {
       toast.classList.remove("visible");
-    }, 2200);
+    }, 2500);
   }
 
   function clampStep(n) {
@@ -152,12 +152,8 @@
       btnNext.classList.toggle("hidden", isLast);
     }
 
-    if (btnSavePdf) {
-      btnSavePdf.classList.toggle("hidden", !isLast);
-    }
-
-    if (btnPrint) {
-      btnPrint.classList.toggle("hidden", !isLast);
+    if (btnSend) {
+      btnSend.classList.toggle("hidden", !isLast);
     }
 
     saveState();
@@ -258,7 +254,6 @@
       var handler = function () {
         state.debts[index][key] = field.value;
         saveState();
-        renderDebtsTable();
       };
       field.addEventListener("input", handler);
       field.addEventListener("change", handler);
@@ -286,38 +281,18 @@
     state.debts.forEach(function (debt, index) {
       debtsCards.appendChild(debtCard(debt, index));
     });
-    renderDebtsTable();
-  }
-
-  function renderDebtsTable() {
-    if (!debtsTbody) {
-      return;
-    }
-
-    debtsTbody.innerHTML = "";
-    state.debts.forEach(function (debt) {
-      var tr = document.createElement("tr");
-      tr.innerHTML =
-        '<td>' + escapeHtml(debt.type) + '</td>' +
-        '<td>' + escapeHtml(debt.obligation) + '</td>' +
-        '<td>' + escapeHtml(debt.owner) + '</td>' +
-        '<td>' + escapeHtml(debt.bank) + '</td>' +
-        '<td>' + escapeHtml(debt.amountStart) + '</td>' +
-        '<td>' + escapeHtml(debt.amountNow) + '</td>' +
-        '<td>' + escapeHtml(debt.installment) + '</td>' +
-        '<td>' + escapeHtml(debt.dateStart) + '</td>' +
-        '<td>' + escapeHtml(debt.dateEnd) + '</td>' +
-        '<td>' + escapeHtml(debt.contractNo) + '</td>' +
-        '<td>' + escapeHtml(debt.willBePaid) + '</td>';
-      debtsTbody.appendChild(tr);
-    });
   }
 
   function getValue(name) {
     return state.person && state.person[name] ? state.person[name] : "";
   }
 
-  function getDebtRows() {
+  function normalizeText(value) {
+    var text = String(value == null ? "" : value).trim();
+    return text || "—";
+  }
+
+  function getFilledDebts() {
     return (state.debts || []).filter(function (debt) {
       return [
         debt.type,
@@ -337,323 +312,103 @@
     });
   }
 
-  function normalizePdfText(value) {
-    var text = String(value == null ? "" : value).trim();
-    return text || "—";
+  function buildEmailBody() {
+    var lines = [];
+    var debts = getFilledDebts();
+
+    function addField(label, value) {
+      lines.push(label + ": " + normalizeText(value));
+    }
+
+    lines.push("NOWY FORMULARZ KLIENTA");
+    lines.push("Data: " + formatDate(new Date()));
+    lines.push("");
+
+    lines.push("DANE OSOBOWE");
+    addField("Imię i nazwisko", getValue("fullName"));
+    addField("Nazwisko panieńskie", getValue("maidenName"));
+    addField("Obywatelstwo", getValue("citizenship"));
+    addField("PESEL", getValue("pesel"));
+    addField("Data urodzenia", getValue("birthDate"));
+    addField("Miejsce urodzenia", getValue("birthPlace"));
+    addField("Imiona rodziców", getValue("parentsNames"));
+    addField("Nazwisko panieńskie mamy", getValue("mothersMaidenName"));
+    addField("Dowód osobisty — seria i numer", getValue("idCardNumber"));
+    addField("Dowód — data wydania", getValue("idCardIssueDate"));
+    addField("Dowód — data ważności", getValue("idCardValidUntil"));
+    lines.push("");
+
+    lines.push("STAN CYWILNY");
+    addField("Stan cywilny", getValue("civilStatus"));
+    addField("Rozdzielność majątkowa", getValue("propertySeparation"));
+    lines.push("");
+
+    lines.push("ADRESY I KONTAKT");
+    addField("Adres zamieszkania + od kiedy", getValue("addressLiving"));
+    addField("Adres zameldowania + od kiedy", getValue("addressRegistered"));
+    addField("Adres korespondencyjny", getValue("addressMailing"));
+    addField("Status mieszkaniowy", getValue("housingStatus"));
+    addField("Telefon komórkowy", getValue("phone"));
+    addField("Adres e-mail", getValue("email"));
+    lines.push("");
+
+    lines.push("WYKSZTAŁCENIE I PRACA");
+    addField("Wykształcenie", getValue("education"));
+    addField("Jaki zawód wykonujesz", getValue("jobTitle"));
+    addField("Branża", getValue("industry"));
+    addField("Całkowity staż pracy", getValue("workTenure"));
+    addField("NIP", getValue("nip"));
+    addField("Źródło dochodów", getValue("incomeSource"));
+    addField("Rodzaj umowy o pracę", getValue("employmentType"));
+    addField("Data podpisania pierwszej umowy", getValue("firstContractDate"));
+    addField("Dane pracodawcy", getValue("employerDetails"));
+    lines.push("");
+
+    lines.push("BANK I INFORMACJE DODATKOWE");
+    addField("Rachunek osobisty", getValue("bankAccount"));
+    addField("Kredyty — ilość", getValue("creditsCount"));
+    addField("Brak zobowiązań", getValue("noCredits"));
+    addField("Numer telefonu do osoby sprzedającej", getValue("sellerPhone"));
+    lines.push("");
+
+    lines.push("ZOBOWIĄZANIA");
+
+    if (!debts.length) {
+      lines.push("Brak zobowiązań.");
+    } else {
+      debts.forEach(function (debt, index) {
+        lines.push("");
+        lines.push("Zobowiązanie " + (index + 1));
+        lines.push("------------------------------");
+        lines.push("Rodzaj: " + normalizeText(debt.type));
+        lines.push("Zobowiązanie: " + normalizeText(debt.obligation));
+        lines.push("Czyje zobowiązanie: " + normalizeText(debt.owner));
+        lines.push("Jaki bank: " + normalizeText(debt.bank));
+        lines.push("Kwota początkowa: " + normalizeText(debt.amountStart));
+        lines.push("Kwota aktualna: " + normalizeText(debt.amountNow));
+        lines.push("Wysokość raty: " + normalizeText(debt.installment));
+        lines.push("Data podpisania umowy: " + normalizeText(debt.dateStart));
+        lines.push("Data zakończenia: " + normalizeText(debt.dateEnd));
+        lines.push("Nr umowy: " + normalizeText(debt.contractNo));
+        lines.push("Czy zostanie spłacone: " + normalizeText(debt.willBePaid));
+      });
+    }
+
+    return lines.join("\n");
   }
 
-  function savePdf() {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      alert("Biblioteka PDF nie została załadowana.");
-      return;
-    }
+  function sendForm() {
+    var clientName = normalizeText(getValue("fullName"));
+    var subject = "Nowy formularz klienta - " + clientName;
+    var body = buildEmailBody();
 
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-      compress: true
-    });
+    var mailtoUrl =
+      "mailto:" + encodeURIComponent(HANIA_EMAIL) +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
 
-    var pageWidth = 210;
-    var pageHeight = 297;
-    var marginX = 12;
-    var contentWidth = pageWidth - (marginX * 2);
-    var y = 12;
-
-    function setTextColor(hex) {
-      var clean = String(hex || "000000").replace("#", "");
-      if (clean.length !== 6) {
-        clean = "000000";
-      }
-      doc.setTextColor(
-        parseInt(clean.substring(0, 2), 16),
-        parseInt(clean.substring(2, 4), 16),
-        parseInt(clean.substring(4, 6), 16)
-      );
-    }
-
-    function line(x1, y1, x2, y2, color, width) {
-      doc.setDrawColor(color || 220, color || 220, color || 220);
-      doc.setLineWidth(width || 0.2);
-      doc.line(x1, y1, x2, y2);
-    }
-
-    function topAccent() {
-      doc.setFillColor(37, 99, 235);
-      doc.rect(marginX, 8, contentWidth, 0.9, "F");
-    }
-
-    function drawMetaBox(x, yy, label, value, w) {
-      doc.setDrawColor(219, 228, 241);
-      doc.setFillColor(248, 251, 255);
-      doc.roundedRect(x, yy, w, 12, 2, 2, "FD");
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.5);
-      setTextColor("64748b");
-      doc.text(String(label).toUpperCase(), x + 2.5, yy + 4);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      setTextColor("0f172a");
-      doc.text(normalizePdfText(value), x + 2.5, yy + 8.6);
-    }
-
-    function drawFooter(pageNo) {
-      line(marginX, 287, pageWidth - marginX, 287, 219, 0.2);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      setTextColor("64748b");
-      var footerText = pageNo === 1
-        ? "Strona 1/2 • Dane klienta"
-        : "Strona 2/2 • Dane zawodowe i zobowiązania";
-      doc.text(footerText, marginX, 291.5);
-    }
-
-    function drawHeader(pageNo) {
-      topAccent();
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      setTextColor("2563eb");
-      doc.text("FORMULARZ OPERACYJNY KLIENTA", marginX, 14);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      setTextColor("0f172a");
-      doc.text("Formularz klienta", marginX, 21.5);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.3);
-      setTextColor("475569");
-      var subtitle = doc.splitTextToSize(
-        "Wersja dokumentowa PDF. Układ przygotowany pod zapis i wydruk A4 bez rozsypywania stron.",
-        112
-      );
-      doc.text(subtitle, marginX, 26.5);
-
-      drawMetaBox(162, 17, "Data", formatDate(new Date()), 36);
-      drawMetaBox(162, 31, "Wersja", "2.1", 36);
-
-      y = 49;
-      drawFooter(pageNo);
-    }
-
-    function drawSectionHeader(kicker, title, note) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(6.5);
-      setTextColor("2563eb");
-      doc.text(String(kicker).toUpperCase(), marginX, y);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      setTextColor("0f172a");
-      doc.text(title, marginX, y + 4.6);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(6.8);
-      setTextColor("64748b");
-      var split = doc.splitTextToSize(note, 58);
-      doc.text(split, pageWidth - marginX, y + 3.8, { align: "right" });
-
-      y += 7.5;
-    }
-
-    function drawFieldBox(x, yy, w, h, label, value) {
-      doc.setDrawColor(226, 232, 240);
-      doc.setFillColor(248, 251, 255);
-      doc.roundedRect(x, yy, w, h, 2.2, 2.2, "FD");
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(5.8);
-      setTextColor("64748b");
-      doc.text(String(label).toUpperCase(), x + 2, yy + 3.5);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.3);
-      setTextColor(normalizePdfText(value) === "—" ? "94a3b8" : "0f172a");
-      var lines = doc.splitTextToSize(normalizePdfText(value), w - 4);
-      doc.text(lines.slice(0, 2), x + 2, yy + 8);
-    }
-
-    function drawFieldGrid(items, cols) {
-      var colGap = 4;
-      var rowGap = 3;
-      var colWidth = (contentWidth - (colGap * (cols - 1))) / cols;
-      var boxHeight = 13;
-      var i;
-
-      for (i = 0; i < items.length; i += cols) {
-        var row = items.slice(i, i + cols);
-        row.forEach(function (item, index) {
-          var boxX = marginX + (index * (colWidth + colGap));
-          drawFieldBox(boxX, y, colWidth, boxHeight, item.label, item.value);
-        });
-        y += boxHeight + rowGap;
-      }
-    }
-
-    function drawWideField(label, value) {
-      drawFieldBox(marginX, y, contentWidth, 13, label, value);
-      y += 16;
-    }
-
-    function drawDebtTable(debts) {
-      var headers = ["Rodzaj", "Zobowiązanie", "Bank", "Kwota akt.", "Rata", "Spłata"];
-      var widths = [28, 52, 30, 24, 22, 18];
-      var x = marginX;
-      var i;
-
-      doc.setFillColor(238, 244, 251);
-      doc.setDrawColor(216, 225, 238);
-      doc.rect(marginX, y, contentWidth, 8, "FD");
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(7);
-      setTextColor("0f172a");
-
-      for (i = 0; i < headers.length; i++) {
-        doc.text(headers[i], x + 1.8, y + 5.2);
-        x += widths[i];
-      }
-
-      y += 8;
-
-      if (!debts.length) {
-        doc.setDrawColor(216, 225, 238);
-        doc.rect(marginX, y, contentWidth, 10, "S");
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7.5);
-        setTextColor("64748b");
-        doc.text("Brak zobowiązań do wykazania.", marginX + 2, y + 6);
-        y += 12;
-        return;
-      }
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.2);
-
-      debts.slice(0, 8).forEach(function (debt) {
-        var values = [
-          normalizePdfText(debt.type),
-          normalizePdfText(debt.obligation),
-          normalizePdfText(debt.bank),
-          normalizePdfText(debt.amountNow),
-          normalizePdfText(debt.installment),
-          normalizePdfText(debt.willBePaid)
-        ];
-
-        var rowHeight = 10;
-        var xPos = marginX;
-
-        doc.setDrawColor(216, 225, 238);
-        doc.rect(marginX, y, contentWidth, rowHeight, "S");
-
-        values.forEach(function (val, index) {
-          var cellWidth = widths[index];
-          var lines = doc.splitTextToSize(val, cellWidth - 3);
-          doc.text(lines.slice(0, 2), xPos + 1.5, y + 4.2);
-          xPos += cellWidth;
-
-          if (index < values.length - 1) {
-            line(xPos, y, xPos, y + rowHeight, 216, 0.2);
-          }
-        });
-
-        y += rowHeight;
-      });
-
-      if (debts.length > 8) {
-        y += 3;
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        setTextColor("64748b");
-        doc.text("W dokumencie pokazano pierwszych 8 zobowiązań. Pozostałe wymagają osobnego zestawienia.", marginX, y);
-        y += 4;
-      }
-    }
-
-    function drawSignature() {
-      y += 6;
-      drawSectionHeader("Sekcja 7", "Podpis klienta", "Miejsce na podpis po wydruku dokumentu.");
-      line(marginX, y + 10, marginX + 70, y + 10, 15, 0.25);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      setTextColor("64748b");
-      doc.text("Czytelny podpis klienta", marginX, y + 15);
-    }
-
-    drawHeader(1);
-
-    drawSectionHeader("Sekcja 1", "Dane osobowe", "Podstawowe dane identyfikacyjne klienta.");
-    drawFieldGrid([
-      { label: "Imię i nazwisko", value: getValue("fullName") },
-      { label: "Nazwisko panieńskie", value: getValue("maidenName") },
-      { label: "Obywatelstwo", value: getValue("citizenship") },
-      { label: "PESEL", value: getValue("pesel") },
-      { label: "Data urodzenia", value: getValue("birthDate") },
-      { label: "Miejsce urodzenia", value: getValue("birthPlace") },
-      { label: "Imiona rodziców", value: getValue("parentsNames") },
-      { label: "Nazwisko panieńskie mamy", value: getValue("mothersMaidenName") },
-      { label: "Dowód osobisty — seria i numer", value: getValue("idCardNumber") },
-      { label: "Dowód — data wydania", value: getValue("idCardIssueDate") },
-      { label: "Dowód — data ważności", value: getValue("idCardValidUntil") }
-    ], 2);
-
-    y += 2;
-    drawSectionHeader("Sekcja 2", "Stan cywilny", "Informacje potrzebne do oceny sytuacji majątkowej.");
-    drawFieldGrid([
-      { label: "Stan cywilny", value: getValue("civilStatus") },
-      { label: "Rozdzielność majątkowa", value: getValue("propertySeparation") }
-    ], 2);
-
-    y += 2;
-    drawSectionHeader("Sekcja 3", "Adresy i kontakt", "Dane kontaktowe i adresowe klienta.");
-    drawFieldGrid([
-      { label: "Adres zamieszkania + od kiedy", value: getValue("addressLiving") },
-      { label: "Adres zameldowania + od kiedy", value: getValue("addressRegistered") },
-      { label: "Adres korespondencyjny", value: getValue("addressMailing") },
-      { label: "Status mieszkaniowy", value: getValue("housingStatus") },
-      { label: "Telefon komórkowy", value: getValue("phone") },
-      { label: "Adres e-mail", value: getValue("email") }
-    ], 2);
-
-    doc.addPage();
-    drawHeader(2);
-
-    drawSectionHeader("Sekcja 4", "Wykształcenie i praca", "Źródło dochodu i aktualna sytuacja zawodowa.");
-    drawFieldGrid([
-      { label: "Wykształcenie", value: getValue("education") },
-      { label: "Jaki zawód wykonujesz", value: getValue("jobTitle") },
-      { label: "Branża", value: getValue("industry") },
-      { label: "Całkowity staż pracy", value: getValue("workTenure") },
-      { label: "NIP (jeśli prowadzisz działalność)", value: getValue("nip") },
-      { label: "Źródło dochodów", value: getValue("incomeSource") },
-      { label: "Rodzaj umowy o pracę", value: getValue("employmentType") },
-      { label: "Data podpisania pierwszej umowy", value: getValue("firstContractDate") }
-    ], 2);
-
-    drawWideField("Dane pracodawcy (nazwa, adres, tel, ilość osób)", getValue("employerDetails"));
-
-    drawSectionHeader("Sekcja 5", "Bank i informacje dodatkowe", "Informacje uzupełniające do procesu finansowego.");
-    drawFieldGrid([
-      { label: "Rachunek osobisty (numer konta, nazwa banku)", value: getValue("bankAccount") },
-      { label: "Kredyty — ilość", value: getValue("creditsCount") },
-      { label: "Brak zobowiązań", value: getValue("noCredits") },
-      { label: "Numer telefonu do osoby sprzedającej", value: getValue("sellerPhone") }
-    ], 2);
-
-    y += 2;
-    drawSectionHeader("Sekcja 6", "Zestawienie zobowiązań", "Układ uproszczony dla stabilnego PDF 2-stronicowego.");
-    drawDebtTable(getDebtRows());
-
-    drawSignature();
-
-    doc.save("formularz_klienta_" + formatDate(new Date()) + ".pdf");
-    showToast("PDF został zapisany.");
+    window.location.href = mailtoUrl;
+    showToast("Otwieram wiadomość e-mail.");
   }
 
   function clearAll() {
@@ -719,14 +474,8 @@
     });
   }
 
-  if (btnPrint) {
-    btnPrint.addEventListener("click", function () {
-      window.print();
-    });
-  }
-
-  if (btnSavePdf) {
-    btnSavePdf.addEventListener("click", savePdf);
+  if (btnSend) {
+    btnSend.addEventListener("click", sendForm);
   }
 
   if (btnClear) {
