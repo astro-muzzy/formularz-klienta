@@ -20,7 +20,7 @@
   const STORAGE_KEY = "hd_form_wizard_email_v1";
   const TOTAL_STEPS = 2;
 
-  const HANIA_EMAIL = "hania@twojadomena.pl";
+  const HANIA_EMAIL = "mateusz.daszuta@gmail.pl";
 
   const state = {
     step: 1,
