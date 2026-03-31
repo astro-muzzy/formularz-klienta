@@ -5,26 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Formularz klienta — premium</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar no-print">
+    <header class="topbar">
       <div class="brand">
         <div class="logo-wrap">
           <div class="logo">HD</div>
         </div>
         <div class="brand-copy">
           <div class="title">Formularz klienta</div>
-          <div class="subtitle">Wersja premium • krok <span id="stepNum">1</span>/2 • gotowe do druku A4</div>
+          <div class="subtitle">Wersja premium • krok <span id="stepNum">1</span>/2</div>
         </div>
       </div>
 
       <div class="actions">
         <button id="btnBack" class="btn btn-secondary" disabled>Wstecz</button>
         <button id="btnNext" class="btn btn-primary">Dalej</button>
-        <button id="btnSavePdf" class="btn btn-primary hidden">Zapisz PDF</button>
-        <button id="btnPrint" class="btn btn-secondary hidden">Drukuj</button>
+        <button id="btnSend" class="btn btn-primary hidden">Wyślij</button>
         <button id="btnClear" class="btn btn-danger">Wyczyść</button>
       </div>
     </header>
@@ -40,7 +38,7 @@
               <h1>Formularz klienta</h1>
               <p class="doc-lead">
                 Dane osobowe i zobowiązania finansowe w jednym, uporządkowanym układzie.
-                Na końcu: zapis PDF lub wydruk A4.
+                Po zakończeniu formularz zostanie przygotowany do wysyłki e-mail.
               </p>
             </div>
 
@@ -51,12 +49,12 @@
               </div>
               <div class="meta-badge">
                 <span class="meta-label">Wersja</span>
-                <strong>1.1</strong>
+                <strong>1.2</strong>
               </div>
             </div>
           </header>
 
-          <nav class="stepper no-print" aria-label="Nawigacja kroków">
+          <nav class="stepper" aria-label="Nawigacja kroków">
             <button class="step-pill active" id="pill1" type="button">
               <span class="step-pill-num">1</span>
               <span class="step-pill-copy">
@@ -162,9 +160,9 @@
                   <div class="choice-label">Stan cywilny</div>
                   <div class="chips">
                     <label class="chip"><input type="radio" name="civilStatus" value="panna/kawaler"><span>panna/kawaler</span></label>
-                    <label class="chip"><input type="radio" name="civilStatus" value="w_związku_małżeńskim"><span>w związku małżeńskim</span></label>
+                    <label class="chip"><input type="radio" name="civilStatus" value="w związku małżeńskim"><span>w związku małżeńskim</span></label>
                     <label class="chip"><input type="radio" name="civilStatus" value="wdowa/wdowiec"><span>wdowa/wdowiec</span></label>
-                    <label class="chip"><input type="radio" name="civilStatus" value="po_rozwodzie"><span>po rozwodzie</span></label>
+                    <label class="chip"><input type="radio" name="civilStatus" value="po rozwodzie"><span>po rozwodzie</span></label>
                   </div>
                 </div>
 
@@ -258,18 +256,18 @@
                 <div class="choice-group wide">
                   <div class="choice-label">Źródło dochodów</div>
                   <div class="chips">
-                    <label class="chip"><input type="radio" name="incomeSource" value="umowa_o_pracę"><span>umowa o pracę</span></label>
-                    <label class="chip"><input type="radio" name="incomeSource" value="umowa_zlecenie"><span>umowa zlecenie</span></label>
-                    <label class="chip"><input type="radio" name="incomeSource" value="umowa_o_dzieło"><span>umowa o dzieło</span></label>
-                    <label class="chip"><input type="radio" name="incomeSource" value="działalność"><span>działalność gosp.</span></label>
+                    <label class="chip"><input type="radio" name="incomeSource" value="umowa o pracę"><span>umowa o pracę</span></label>
+                    <label class="chip"><input type="radio" name="incomeSource" value="umowa zlecenie"><span>umowa zlecenie</span></label>
+                    <label class="chip"><input type="radio" name="incomeSource" value="umowa o dzieło"><span>umowa o dzieło</span></label>
+                    <label class="chip"><input type="radio" name="incomeSource" value="działalność gospodarcza"><span>działalność gosp.</span></label>
                   </div>
                 </div>
 
                 <div class="choice-group">
                   <div class="choice-label">Rodzaj umowy o pracę</div>
                   <div class="chips">
-                    <label class="chip"><input type="radio" name="employmentType" value="nieokreślony"><span>na czas nieokreślony</span></label>
-                    <label class="chip"><input type="radio" name="employmentType" value="określony"><span>na czas określony</span></label>
+                    <label class="chip"><input type="radio" name="employmentType" value="na czas nieokreślony"><span>na czas nieokreślony</span></label>
+                    <label class="chip"><input type="radio" name="employmentType" value="na czas określony"><span>na czas określony</span></label>
                   </div>
                 </div>
               </div>
@@ -318,7 +316,7 @@
               </div>
             </section>
 
-            <div class="page-footer muted small">Strona 1/2 • Dane osobowe</div>
+            <div class="page-footer muted small">Krok 1/2 • Dane osobowe</div>
           </section>
 
           <section class="page step step-2" data-step="2">
@@ -336,48 +334,17 @@
                   <h3>Zobowiązania</h3>
                   <p class="block-subtitle">Każde zobowiązanie możesz dodać jako osobną kartę.</p>
                 </div>
-                <button id="btnAddDebt" class="btn btn-secondary btn-small no-print" type="button">+ Dodaj zobowiązanie</button>
+                <button id="btnAddDebt" class="btn btn-secondary btn-small" type="button">+ Dodaj zobowiązanie</button>
               </div>
 
-              <div id="debtsCards" class="cards no-print"></div>
+              <div id="debtsCards" class="cards"></div>
 
-              <table class="table print-only" aria-label="Zobowiązania">
-                <thead>
-                  <tr>
-                    <th>Rodzaj</th>
-                    <th>Zobowiązanie</th>
-                    <th>Czyje</th>
-                    <th>Bank</th>
-                    <th>Kwota pocz.</th>
-                    <th>Kwota akt.</th>
-                    <th>Rata</th>
-                    <th>Data umowy</th>
-                    <th>Koniec</th>
-                    <th>Nr umowy</th>
-                    <th>Spłata</th>
-                  </tr>
-                </thead>
-                <tbody id="debtsTbody"></tbody>
-              </table>
-
-              <div class="hint muted">Jeśli klient nie ma zobowiązań, zostaw pustą sekcję lub usuń wiersze.</div>
-            </section>
-
-            <section class="block signature-block">
-              <div class="block-header">
-                <div>
-                  <h3>Podpis klienta</h3>
-                  <p class="block-subtitle">Miejsce na czytelny podpis po wydruku dokumentu.</p>
-                </div>
-              </div>
-
-              <div class="signature">
-                <div class="line"></div>
-                <div class="muted small">Podpis klienta</div>
+              <div class="hint muted">
+                Po kliknięciu „Wyślij” otworzy się gotowa wiadomość e-mail z danymi formularza.
               </div>
             </section>
 
-            <div class="page-footer muted small">Strona 2/2 • Zobowiązania i podpis</div>
+            <div class="page-footer muted small">Krok 2/2 • Zobowiązania</div>
           </section>
         </section>
       </section>
