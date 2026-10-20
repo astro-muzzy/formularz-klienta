@@ -675,3 +675,71 @@ body[data-step="2"] .step-2{ display:block; }
   .card input,
   .card select{ min-height:42px; }
 }
+/* v1.4 — spokojniejsza typografia i bardziej kompaktowe przyciski */
+body { font-weight:400; }
+.brand-copy .title { font-weight:650; }
+.logo { font-weight:650; }
+.doc-header h1 { font-weight:660; }
+.doc-kicker, .section-kicker { font-weight:700; letter-spacing:.095em; }
+.meta-badge strong { font-weight:600; }
+.step-pill-copy strong { font-weight:600; }
+.step-pill-num { font-weight:650; }
+.page-title h2 { font-weight:650; }
+.block h3 { font-weight:620; }
+.field span, .card-grid label span { font-weight:560; }
+.choice-label { font-weight:560; }
+.chip span { font-weight:500; }
+.card-title { font-weight:700; letter-spacing:.025em; }
+
+.btn {
+  padding:8px 13px;
+  min-height:36px;
+  border-radius:9px;
+  font-size:.86rem;
+  font-weight:600;
+  line-height:1.25;
+  box-shadow:none;
+  transition:background .15s, border-color .15s, box-shadow .15s;
+}
+.btn:hover:not(:disabled) { transform:none; }
+.btn:focus-visible, .step-pill:focus-visible {
+  outline:2px solid #80a9ff;
+  outline-offset:2px;
+}
+.btn-primary {
+  background:#2563eb;
+  border-color:#2563eb;
+  box-shadow:0 2px 6px rgba(37,99,235,.18);
+}
+.btn-primary:hover:not(:disabled) { background:#1d4ed8; }
+.btn-secondary {
+  background:rgba(255,255,255,.035);
+  border-color:rgba(255,255,255,.18);
+  box-shadow:none;
+}
+.btn-danger {
+  color:#fecaca;
+  background:rgba(220,38,38,.08);
+  border-color:rgba(248,113,113,.35);
+  box-shadow:none;
+}
+.btn-danger:hover:not(:disabled) { background:rgba(220,38,38,.22); }
+.btn-small { padding:7px 11px; min-height:32px; font-size:.8rem; }
+.block .btn-danger {
+  background:#fff5f5;
+  color:#b91c1c;
+  border-color:#fecaca;
+}
+.block .btn-danger:hover:not(:disabled) { background:#fee2e2; }
+.step-pill { box-shadow:none; border-radius:13px; }
+.step-pill:hover { transform:none; }
+.step-pill.active { box-shadow:none; }
+.chip.active { box-shadow:none; }
+.chip:hover { transform:none; }
+.field input, .card input, .card select { font-size:.9rem; }
+.block, .card { box-shadow:0 2px 8px rgba(15,23,42,.03); }
+
+@media (max-width:640px) {
+  .actions { gap:6px; }
+  .btn { padding:8px 9px; font-size:.79rem; }
+}
