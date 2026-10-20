@@ -41,7 +41,8 @@
 
   function setToday() {
     if (today) {
-      today.textContent = formatDate(new Date());
+      const now = new Date();
+      today.textContent = pad2(now.getDate()) + "." + pad2(now.getMonth() + 1) + "." + now.getFullYear();
     }
   }
 
