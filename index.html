@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Formularz klienta — premium</title>
+  <title>Formularz klienta — PDF</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,15 +15,16 @@
         </div>
         <div class="brand-copy">
           <div class="title">Formularz klienta</div>
-          <div class="subtitle">Wersja premium • krok <span id="stepNum">1</span>/2</div>
+          <div class="subtitle">Krok <span id="stepNum">1</span> z 2</div>
         </div>
       </div>
 
       <div class="actions">
         <button id="btnBack" class="btn btn-secondary" disabled>Wstecz</button>
         <button id="btnNext" class="btn btn-primary">Dalej</button>
-        <button id="btnSend" class="btn btn-primary hidden">Wyślij</button>
-        <button id="btnClear" class="btn btn-danger">Wyczyść</button>
+        <button id="btnPreview" class="btn btn-secondary hidden" type="button">Podgląd / drukuj</button>
+        <button id="btnSend" class="btn btn-primary hidden" type="button">Pobierz PDF</button>
+        <button id="btnClear" class="btn btn-danger" type="button">Wyczyść</button>
       </div>
     </header>
 
@@ -37,7 +38,7 @@
               <div class="doc-kicker">Formularz operacyjny klienta</div>
               <h1>Formularz klienta</h1>
               <p class="doc-lead">
-                Dane klienta i zobowiązania w krótszym, kompaktowym układzie. Po zakończeniu formularz zostanie przygotowany do wysyłki e-mail.
+                Uzupełnij dane klienta i zobowiązania. Na końcu pobierz gotowy dokument PDF.
               </p>
             </div>
 
@@ -48,7 +49,7 @@
               </div>
               <div class="meta-badge">
                 <span class="meta-label">Wersja</span>
-                <strong>1.3</strong>
+                <strong>1.4</strong>
               </div>
             </div>
           </header>
@@ -339,7 +340,7 @@
               <div id="debtsCards" class="cards"></div>
 
               <div class="hint muted">
-                Po kliknięciu „Wyślij” otworzy się gotowa wiadomość e-mail z danymi formularza.
+                Do PDF trafią tylko uzupełnione pola i zobowiązania. Plik powstaje na Twoim urządzeniu — bez wysyłania danych.
               </div>
             </section>
 
@@ -352,6 +353,10 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js"></script>
+  <!-- Logika formularza uruchamia się niezależnie od pobierania bibliotek PDF. -->
+  <script defer src="app.js"></script>
+  <!-- PDFMake + Roboto: bezpośredni, edytowalny tekstowo plik PDF z polskimi znakami. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.20/build/pdfmake.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/pdfmake@0.2.20/build/vfs_fonts.js"></script>
 </body>
 </html>
