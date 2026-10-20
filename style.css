@@ -743,3 +743,27 @@ body { font-weight:400; }
   .actions { gap:6px; }
   .btn { padding:8px 9px; font-size:.79rem; }
 }
+
+/* v1.4.1 — dyskretna informacja o marce korzystającej z formularza */
+.partner-footer {
+  margin-top:22px;
+  padding-top:14px;
+  border-top:1px solid #e8edf5;
+  text-align:center;
+  color:#8491a5;
+  font-size:.72rem;
+  font-weight:400;
+  letter-spacing:.006em;
+}
+.partner-footer a {
+  color:#657a9a;
+  text-decoration:none;
+  font-weight:550;
+  text-underline-offset:3px;
+  transition:color .15s ease;
+}
+.partner-footer a:hover,
+.partner-footer a:focus-visible {
+  color:#2454bd;
+  text-decoration:underline;
+}
