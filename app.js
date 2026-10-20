@@ -488,7 +488,7 @@
       content: items,
       footer: function (currentPage, pageCount) {
         return { columns: [
-          { text: "Formularz klienta • dokument wygenerowany lokalnie", color: "#8a96ab", fontSize: 8 },
+          { text: "Z formularza korzysta Razem po kredyt", color: "#8a96ab", fontSize: 8 },
           { text: "Strona " + currentPage + " / " + pageCount, alignment: "right",
             color: "#8a96ab", fontSize: 8 }
         ], margin: [40, 13, 40, 0] };
@@ -596,7 +596,7 @@
       '<div class="sub">Dane klienta i zestawienie zobowiązań</div></div>' +
       '<div class="date"><span class="sub">DATA DOKUMENTU</span><strong>' +
       escapeHtml(headerDate) + '</strong></div></header>' + sections +
-      '<footer class="foot">Formularz klienta • dokument wygenerowany lokalnie</footer>' +
+      '<footer class="foot">Z formularza korzysta Razem po kredyt</footer>' +
       '</main></body></html>';
   }
 
