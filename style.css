@@ -767,3 +767,26 @@ body { font-weight:400; }
   color:#2454bd;
   text-decoration:underline;
 }
+
+/* v1.4.2 — data w jednym wierszu na wszystkich ekranach */
+.doc-meta {
+  min-width: 250px;
+  flex-shrink: 0;
+}
+.meta-badge strong {
+  display: block;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.meta-badge:first-child {
+  flex: 1.25;
+}
+@media (max-width:900px) {
+  .doc-meta {
+    min-width: 0;
+    flex-shrink: 1;
+  }
+  .doc-meta .meta-badge {
+    flex: 0 1 160px;
+  }
+}
